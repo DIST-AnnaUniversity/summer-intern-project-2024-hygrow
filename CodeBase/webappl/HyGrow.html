@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyGrow</title>
+    <style>
+        body {
+            font-family: Century;
+            text-align: center;
+            color: white;
+        }
+        .background {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-image: url("farm.jpg");
+            background-size: cover;
+            background-position: center;
+            filter: blur(6px);
+            z-index: -1;
+        }
+        h1 {
+            margin-top: 50px;
+            font-size: 48px;
+            color: seagreen;
+            font-family:Georgia;
+            display: inline;
+        }
+        
+        #image1{
+          width:50%;
+          height:auto;
+          display:block;
+          margin-left:auto;
+          margin-right:auto;
+        }
+
+        .marq{
+          text-align: center;
+          color:green;
+          font-size: 25px;
+          font-weight:600;
+          font-family:Century;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 8px;
+            font-size: 18px;
+            font-weight:600;
+            background-color: #8ca20d;
+            color: black;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        
+        p{
+          font-size:25px;
+          font-weight:800;
+          color:#004d40;
+        }
+
+        .navbar {
+            width: 100%;
+            background-color:lightskyblue;
+            overflow: auto;
+        }
+
+        .navbar a {
+            float: left;
+            padding: 10px 30px;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            background-color: #004d40;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .download-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #00796b;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .download-button:hover {
+            background-color: #004d40;
+        }
+
+        .button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 15px;
+            font-size: 18px;
+            color: white;
+            font-family:century;
+            background-color: #8B4513;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button.off {
+            background-color: #8B4513;
+        }
+        .button.off:hover {
+            background-color: #da190b;
+        }
+        #status { margin-top: 20px; font-size: 24px; color:darkgreen; font-weight: bold;}
+
+        a[href^='mailto']::before {
+          content: '📧 ';
+        }
+
+        a[href^='tel']::before {
+          content: '📞 ';
+        }
+
+        a:hover {
+        color: #004d40;
+        background-color: #45a049;
+        }
+
+        a{
+          text-decoration:none;
+          color:#3ec70b;
+          font-size:18px;
+          font-weight:800;
+        }
+    </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="navbar">
+    <a href="#home">Home</a>
+</div>
+<br><br>
+    <h1>HyGrow</h1>
+    <br><br><br>
+    <marquee class="marq">Welcome to HyGrow, your smart solution for remote plant watering!!</marquee>
+    <br><br>
+    <button id="motorbtn" class="button" onclick="controlMotor()">Turn Motor On</button>
+    
+    <br><br>
+    <div id="status">Motor Status: Unknown</div>
+    <br><br>
+    <div class="image1">
+    <button class="button" onclick="checkTemperature()"><img src="temperature.jpg" width="20" height="20"/> Check Temperature</button>
+    <button class="button" onclick="checkHumidity()"><img src="humidity.jpg" width="22" height="22"/> Check Humidity</button>
+    </div>
+    <br>
+
+    <script>
+      let server_ip='http://192.168.83.43';
+        async function controlMotor() {
+          try {
+            let action="off";
+            var buttontext= document.getElementById('motorbtn').innerText;
+            if (buttontext=="Turn Motor On")
+            {
+              action = "on";              
+            }
+            let relayURL= server_ip + "/relay/"+action;
+            let response = await fetch(relayURL);
+            if (response.ok) {
+              let text = await response.text();
+              document.getElementById('status').innerText = 'Motor Status:'+ text;
+              console.log(`Motor ${action}:`, text);
+              if (action == "on")
+              {
+                document.getElementById('motorbtn').innerText = "Turn Motor Off";
+              }
+              else
+              {
+                document.getElementById('motorbtn').innerText = "Turn Motor On";
+              }
+            } else {
+              console.error('Network response was not ok:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Fetch operation failed:', error);
+          }
+        }  
+        
+        async function checkTemperature() {
+          try {
+            let response = await fetch(server_ip+`/temperature`);
+            if (response.ok) {
+              let text = await response.text();
+              document.getElementById('status').innerText = 'Temperature:'+ text;
+            } else {
+              console.error('Network response was not ok:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Fetch operation failed:', error);
+          }
+        }
+    
+        async function checkHumidity() {
+          try {
+            let response = await fetch(server_ip+`/humidity`);
+            if (response.ok) {
+              let text = await response.text();
+              document.getElementById('status').innerText = 'Humidity:'+ text;
+            } else {
+              console.error('Network response was not ok:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Fetch operation failed:', error);
+          }
+        }
+
+        async function fetchData(action) {
+          try {
+            let url = server_ip+"/"+action;
+            let response = await fetch(url);
+            if (response.ok) {
+                let text = await response.text();
+                document.getElementById('status').innerText = `${action.charAt(0).toUpperCase() + action.slice(1)}: ${text}`;
+            } else {
+                console.error('Network response was not ok:', response.statusText);
+            }
+         } catch (error) {
+            console.error('Fetch operation failed:', error);
+         }
+       }
+      </script>
+
+  <p>Contact us:</p>
+  <address>
+    <a href="mailto:HyGrow2k24@gmail.com">HyGrow2k24@gmail.com</a><br />
+    <a href="tel:+918257901346">+918257901346</a>
+  </address>
+    <div class="footer">
+      &copy; 2024 HyGrow. All rights reserved.
+  </div>
+</body>
+</html>
